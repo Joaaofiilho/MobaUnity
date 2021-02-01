@@ -15,7 +15,7 @@ public class Player : Unit
     private NavMeshAgent navMeshAgent;
 
     //Attack session
-    private Unit attackUnit;
+    private Unit attackFocus;
 
     [SerializeField]
     private float basicAttackRange = 6f;
@@ -27,10 +27,6 @@ public class Player : Unit
 
     [SerializeField]
     private GameObject basicAttackPrefab;
-
-    //Gold session
-    [SerializeField]
-    private float gold;
 
     //Debug section
     [SerializeField]
@@ -54,27 +50,26 @@ public class Player : Unit
             attackSpeedCooldown = 1f / attackSpeed;
         }
 
-            if (attackUnit)
+        if (attackFocus)
         {
-            if (Vector3.Distance(transform.position, attackUnit.transform.position) >= basicAttackRange)
+            if (Vector3.Distance(transform.position, attackFocus.transform.position) >= basicAttackRange)
             {
-                Debug.Log("Moving!");
-                Move(attackUnit.transform.position);
+                Debug.Log("Moving");
+                Move(attackFocus.transform.position);
             }
             else
             {
-                navMeshAgent.destination = transform.position;
+                Stop();
 
                 if(attackSpeedCooldown >= 1f/attackSpeed)
                 {
                     attackSpeedCooldown = 0;
                     GameObject _basicAttackPrefab = Instantiate(basicAttackPrefab, transform.position, Quaternion.identity);
                     BasicAttack basicAttack = _basicAttackPrefab.GetComponent<BasicAttack>();
-                    basicAttack.Follow(attackUnit);
+                    basicAttack.Follow(attackFocus);
                     basicAttack.OnHit += target =>
                     {
-                        gold += 1f;
-                        Destroy(basicAttack);
+                        Destroy(_basicAttackPrefab);
                     };
                 }
             }
@@ -93,13 +88,13 @@ public class Player : Unit
     {
         if (context.started)
         {
-            attackUnit = null;
+            attackFocus = null;
             //Obtendo o raio apontando da posição da câmera até o ponto da posição do clique do mouse
             Ray ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             RaycastHit hit;
 
             //Verificando se o raio acerta algum GameObject
-            if (Physics.Raycast(ray, out hit, whatIsGround))
+            if (Physics.Raycast(ray, out hit))
             {
                 GameObject hitGameObject = hit.collider.gameObject;
                 if (hitGameObject)
@@ -122,12 +117,21 @@ public class Player : Unit
 
     public void Move(Vector3 destination)
     {
-        if(navMeshAgent.destination != destination)
+        if (navMeshAgent.destination != destination)
+        {
             navMeshAgent.destination = destination;
+        }
     }
 
     public void Attack(Unit target)
     {
-        attackUnit = target;
+        attackFocus = target;
+    }
+
+    public void Stop()
+    {
+        navMeshAgent.velocity = Vector3.zero;
+        navMeshAgent.ResetPath();
+        attackFocus = null;
     }
 }

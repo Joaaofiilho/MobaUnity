@@ -14,8 +14,6 @@ public class BasicAttack : MonoBehaviour
 
     private void FixedUpdate()
     {
-
-        Debug.Log("Target: " + target);
         if(target)
         {
             transform.position = Vector3.Lerp(transform.position, target.transform.position, basicAttackAnimationSpeed);
