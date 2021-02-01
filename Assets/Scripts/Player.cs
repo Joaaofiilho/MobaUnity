@@ -14,17 +14,9 @@ public class Player : MonoBehaviour
 
     private NavMeshAgent navMeshAgent;
 
-    private Vector3 destination;
-
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
-    }
-
-    private void Update()
-    {
-        if(destination != null)
-            Debug.DrawRay(transform.position, destination.normalized * 2);
     }
 
     public void Move(InputAction.CallbackContext context)
@@ -36,7 +28,6 @@ public class Player : MonoBehaviour
         if (Physics.Raycast(ray, out hit, 100, whatIsGround))
         {
             navMeshAgent.destination = hit.point;
-            destination = hit.point;
         }
     }
 }
