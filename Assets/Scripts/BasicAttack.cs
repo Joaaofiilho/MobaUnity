@@ -24,11 +24,10 @@ public class BasicAttack : MonoBehaviour
     {
         Unit unit = other.gameObject.GetComponent<Unit>();
         Debug.Log("Unit basic attack hitted: " + unit);
-        switch (other.gameObject.tag)
+
+        if(other.gameObject.CompareTag(Tags.Minion.Value))
         {
-            case "Minion":
-                OnHit(gameObject);
-                break;
+            OnHit(gameObject);
         }
     }
 

@@ -26,6 +26,11 @@ public class Player : Unit
     private float attackSpeedCooldown;
 
     [SerializeField]
+    private float attackChannelingTime = 0.2f;
+
+    private float attackChannelingCooldown;
+
+    [SerializeField]
     private GameObject basicAttackPrefab;
 
     //Debug section
@@ -40,6 +45,7 @@ public class Player : Unit
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        navMeshAgent.updateRotation = false;
     }
 
     private void Update()
@@ -54,25 +60,43 @@ public class Player : Unit
         {
             if (Vector3.Distance(transform.position, attackFocus.transform.position) >= basicAttackRange)
             {
-                Debug.Log("Moving");
+                Debug.Log("Moving to attack");
                 Move(attackFocus.transform.position);
             }
             else
             {
-                Stop();
+                StopMoving();
 
                 if(attackSpeedCooldown >= 1f/attackSpeed)
                 {
-                    attackSpeedCooldown = 0;
-                    GameObject _basicAttackPrefab = Instantiate(basicAttackPrefab, transform.position, Quaternion.identity);
-                    BasicAttack basicAttack = _basicAttackPrefab.GetComponent<BasicAttack>();
-                    basicAttack.Follow(attackFocus);
-                    basicAttack.OnHit += target =>
+                    attackChannelingCooldown += Time.deltaTime;
+
+                    if (attackChannelingCooldown >= attackChannelingTime)
                     {
-                        Destroy(_basicAttackPrefab);
-                    };
+                        Debug.Log("Attacking");
+                        attackSpeedCooldown = 0;
+                        GameObject _basicAttackPrefab = Instantiate(basicAttackPrefab, transform.position, Quaternion.identity);
+                        BasicAttack basicAttack = _basicAttackPrefab.GetComponent<BasicAttack>();
+                        basicAttack.Follow(attackFocus);
+                        basicAttack.OnHit += target =>
+                        {
+                            Destroy(_basicAttackPrefab);
+                        };
+                    }
                 }
             }
+        } else
+        {
+            attackChannelingCooldown = 0;
+        }
+    }
+
+
+    private void LateUpdate()
+    {
+        if (navMeshAgent.velocity.sqrMagnitude > Mathf.Epsilon)
+        {
+            transform.rotation = Quaternion.LookRotation(navMeshAgent.velocity.normalized);
         }
     }
 
@@ -106,6 +130,7 @@ public class Player : Unit
                         interactable = hitGameObject.GetComponent<Minion>() as Interactable;
                     } else if(hitGameObject.CompareTag(Tags.Map.Value))
                     {
+                        StopMoving();
                         Move(hit.point);
                     }
 
@@ -128,10 +153,15 @@ public class Player : Unit
         attackFocus = target;
     }
 
-    public void Stop()
+    public void StopAll()
+    {
+        StopMoving();
+        attackFocus = null;
+    }
+
+    private void StopMoving()
     {
         navMeshAgent.velocity = Vector3.zero;
         navMeshAgent.ResetPath();
-        attackFocus = null;
     }
 }
