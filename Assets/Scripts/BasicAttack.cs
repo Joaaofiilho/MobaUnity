@@ -1,38 +1,60 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
+using Utils;
 
 public class BasicAttack : MonoBehaviour
 {
-    private Unit target;
+    private float _attackDamage;
+    private Unit _actor;
+    private Unit _attackTarget;
+    private Vector3 _lastKnownPosition;
 
-    public delegate void HitCallback(GameObject target);
+    public delegate void HitCallback(Unit target);
+
     public HitCallback OnHit;
 
-    [SerializeField]
-    private float basicAttackAnimationSpeed = 0.5f;
+    [SerializeField] private float basicAttackAnimationSpeed;
 
     private void FixedUpdate()
     {
-        if(target)
+        if (_attackTarget)
         {
-            transform.position = Vector3.Lerp(transform.position, target.transform.position, basicAttackAnimationSpeed);
+            _lastKnownPosition = _attackTarget.transform.position;
         }
+        else
+        {
+            var distance = Vector3.Distance(transform.position, _lastKnownPosition);
+            if (distance < 0.1f)
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        transform.position += (_lastKnownPosition - transform.position).normalized * basicAttackAnimationSpeed * Time.fixedDeltaTime;
+    }
+
+    private void OnDestroy()
+    {
+        OnHit = null;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Unit unit = other.gameObject.GetComponent<Unit>();
-        Debug.Log("Unit basic attack hitted: " + unit);
-
-        if(other.gameObject.CompareTag(Tags.Minion.Value))
+        Debug.Log("Triggering! | targetID = " + _attackTarget.GetInstanceID() + " | collision ID = " + other.gameObject
+            .GetInstanceID());
+        if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID())
         {
-            OnHit(gameObject);
+            _attackTarget.TakeDamage(_actor, _attackDamage);
+            OnHit?.Invoke(_attackTarget);
+            Destroy(gameObject);
         }
     }
 
-    public void Follow(Unit target)
+    public void Follow(Unit actor, Unit target, float damage, float basicAttackAnimationSpeed)
     {
-        this.target = target;
+        _attackDamage = damage;
+        _actor = actor;
+        _attackTarget = target;
+        this.basicAttackAnimationSpeed = basicAttackAnimationSpeed;
     }
 }

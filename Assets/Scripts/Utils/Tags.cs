@@ -1,14 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Tags
+﻿namespace Utils
 {
-    private Tags(string value) { Value = value; }
+    public class Tags
+    {
+        private Tags(string value)
+        {
+            Value = value;
+        }
 
-    public string Value { get; set; }
+        public string Value { get; }
 
-    public static Tags Player { get { return new Tags("Player"); } }
-    public static Tags Map { get { return new Tags("Map"); } }
-    public static Tags Minion { get { return new Tags("Minion"); } }
+        public static Tags Map => new Tags("Map");
+        public static Tags Minion => new Tags("Minion");
+        public static Tags Champion => new Tags("Champion");
+    }
 }

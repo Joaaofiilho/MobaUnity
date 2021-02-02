@@ -13,12 +13,13 @@ GameObject:
   - component: {fileID: 8169288003407480754}
   - component: {fileID: 8169288003407480757}
   - component: {fileID: 8169288003407480756}
+  - component: {fileID: 8423189209503057458}
   - component: {fileID: 8169288003407480759}
   - component: {fileID: 566901755934069890}
   - component: {fileID: 8169288005176908224}
   m_Layer: 9
   m_Name: Player
-  m_TagString: Player
+  m_TagString: Champion
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -113,15 +114,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 500
   health: 500
-  whatIsGround:
-    serializedVersion: 2
-    m_Bits: 256
-  playerCamera: {fileID: 0}
+  attackTarget: {fileID: 0}
   basicAttackRange: 6
+  isOnAttackRange: 0
   attackSpeed: 1
+  attackChannelingTime: 0.2
   basicAttackPrefab: {fileID: 5120495646752214142, guid: 01fe52c695ce8ad4b8d29dc97c328911,
     type: 3}
   showAttackRange: 0
+  gold: 0
+  playerCamera: {fileID: 0}
+--- !u!114 &8423189209503057458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8169288003407480761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa92a66ed0f3ac4ba372f3d8e715fb7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerCamera: {fileID: 0}
 --- !u!114 &8169288003407480759
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -190,7 +205,7 @@ MonoBehaviour:
     m_ActionName: UI/TrackedDeviceOrientation
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8169288003407480756}
+      - m_Target: {fileID: 8423189209503057458}
         m_MethodName: OnActionInput
         m_Mode: 0
         m_Arguments:
@@ -224,9 +239,9 @@ MonoBehaviour:
     m_ActionName: Player/Select[/Mouse/leftButton]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8169288003407480756}
-        m_MethodName: Stop
-        m_Mode: 1
+      - m_Target: {fileID: 8423189209503057458}
+        m_MethodName: OnStopAllInput
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -253,7 +268,7 @@ NavMeshAgent:
   m_AgentTypeID: 0
   m_Radius: 0.5
   m_Speed: 5
-  m_Acceleration: 340
+  m_Acceleration: 2500
   avoidancePriority: 50
   m_AngularSpeed: 2500
   m_StoppingDistance: 0.5

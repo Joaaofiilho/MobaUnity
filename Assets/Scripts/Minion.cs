@@ -1,33 +1,37 @@
 ﻿using UnityEngine;
-using UnityEngine.AI;
+using Utils;
 
-public class Minion : Unit
+public class Minion : WalkableUnit
 {
     [SerializeField]
-    private Transform target;
-    
-    private NavMeshAgent navMeshAgent;
+    private Transform destination;
 
-    public override void OnAction(GameObject actor)
+    private float _goldValue = 20f;
+
+    public override void Action(GameObject actor)
     {
-        if(actor.CompareTag(Tags.Player.Value))
+        if(actor.CompareTag(Tags.Champion.Value))
         {
-            Highlight();
-
-            Player player = actor.GetComponent<Player>();
-            player.Attack(this);
+            var champion = actor.GetComponent<Champion>();
+            champion.SetAttackTarget(this);
         }
     }
 
-    private void Highlight()
+    //Base class methods
+    protected override void OnDie(Unit actor)
     {
+        if (actor.CompareTag(Tags.Champion.Value))
+        {
+            var champion = actor as Champion;
+            champion.gold += _goldValue;
+        }
 
+        Destroy(gameObject);
     }
 
-    void Start()
+    protected override void Start()
     {
-        navMeshAgent = GetComponent<NavMeshAgent>();
-        navMeshAgent.destination = target.position;
-        Debug.Log(navMeshAgent);
+        base.Start();
+        Move(destination.position);
     }
 }
