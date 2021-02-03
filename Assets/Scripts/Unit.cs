@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Utils;
 
 public abstract class Unit : MonoBehaviour
 {
     [SerializeField] private float maxHealth;
-    [SerializeField] private float health;
+    [SerializeField] private float currentHealth;
 
     //Stats section
     protected Statistics Statistics;
@@ -30,24 +31,23 @@ public abstract class Unit : MonoBehaviour
 
     //Debug section
     [SerializeField] private bool showAttackRange;
-
-    //Callbacks section
-    public delegate void TakeDamageCallback(float amount);
-
-    public TakeDamageCallback OnTakeDamageCallback;
+    
+    //Callbacks
+    
+    //amount of damage
+    public event Action<float> OnTakeDamage = delegate {  };
+    
+    //currentHealth and maxHealth
+    public event Action<float, float> OnHealthChanged = delegate {  }; 
 
     /// <summary>
     /// Callback to delegate the amount healed from a unit.
     /// </summary>
+    /// /// <param name="amount">The amount of the heal, dependent on the current health.</param>
     /// <param name="totalAmount">The total amount of the heal, independent of the current health.</param>
-    /// <param name="amount">The amount of the heal, dependent on the current health.</param>
-    public delegate void HealCallback(float totalAmount, float amount);
-
-    public HealCallback OnHealCallback;
+    public event Action<float, float> OnHeal = delegate(float amount, float totalAmount) {  };
     
-    public delegate void DieCallback(Unit actor, Unit target);
-
-    public DieCallback OnDieCallback;
+    public event Action<Unit, Unit> OnDied = delegate(Unit actor, Unit target) { };
 
     protected virtual void Awake()
     {
@@ -137,30 +137,34 @@ public abstract class Unit : MonoBehaviour
 
     public void TakeDamage(Unit actor, float amount, DamageType damageType = DamageType.TrueDamage)
     {
-        health -= amount;
-        OnTakeDamageCallback?.Invoke(amount);
-
-        if (health <= 0)
+        currentHealth -= amount;
+        OnTakeDamage(amount);
+        
+        OnHealthChanged(currentHealth, maxHealth);
+        
+        if (currentHealth <= 0)
         {
-            OnDieCallback?.Invoke(actor, this);
-            actor.OnKillUnit(this);
             OnDie(actor);
+            actor.OnKillUnit(this);
+            OnDied(actor, this);
         }
     }
 
     public void Heal(Unit actor, float amount)
     {
-        var previousHealth = health;
-
-        if (health + amount >= maxHealth)
+        var previousHealth = currentHealth;
+        
+        if (currentHealth + amount >= maxHealth)
         {
-            health = maxHealth;
-            OnHealCallback?.Invoke(maxHealth - previousHealth, amount);
+            currentHealth = maxHealth;
+            OnHealthChanged(currentHealth, maxHealth);
+            OnHeal(maxHealth - previousHealth, amount);
         }
         else
         {
-            health += amount;
-            OnHealCallback(amount, amount);
+            currentHealth += amount;
+            OnHealthChanged(currentHealth, maxHealth);
+            OnHeal(amount, amount);
         }
     }
 

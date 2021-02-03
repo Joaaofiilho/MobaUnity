@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using Utils;
 
@@ -6,7 +7,10 @@ public class Champion : WalkableUnit
 {
     public Camera playerCamera;
     
-    public float gold;
+    private float _gold;
+    
+    //Callbacks
+    public event Action<float> OnGoldChanged = delegate(float gold) {  };
     
     protected override void Start()
     {
@@ -52,5 +56,17 @@ public class Champion : WalkableUnit
     {
         StopMoving();
         attackTarget = null;
+    }
+
+    
+    /// <summary>
+    /// Increases the champion's gold amount.
+    /// <para>The gold amount must be greater than 0.</para>
+    /// </summary>
+    /// <param name="amount">The amount of gold to add to the champion.</param>
+    public void AddGold(float amount)
+    {
+        _gold += amount;
+        OnGoldChanged(_gold);
     }
 }

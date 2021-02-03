@@ -113,17 +113,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 500
-  health: 500
+  currentHealth: 500
   attackTarget: {fileID: 0}
   basicAttackRange: 6
   isOnAttackRange: 0
   attackSpeed: 1
   attackChannelingTime: 0.2
+  basicAttackAnimationSpeed: 15
   basicAttackPrefab: {fileID: 5120495646752214142, guid: 01fe52c695ce8ad4b8d29dc97c328911,
     type: 3}
   showAttackRange: 0
-  gold: 0
   playerCamera: {fileID: 0}
+  gold: 0
 --- !u!114 &8423189209503057458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,7 +270,7 @@ NavMeshAgent:
   m_Radius: 0.5
   m_Speed: 5
   m_Acceleration: 2500
-  avoidancePriority: 50
+  avoidancePriority: 0
   m_AngularSpeed: 2500
   m_StoppingDistance: 0.5
   m_AutoTraverseOffMeshLink: 1

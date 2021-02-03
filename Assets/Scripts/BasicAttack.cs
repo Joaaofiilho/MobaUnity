@@ -15,6 +15,12 @@ public class BasicAttack : MonoBehaviour
 
     [SerializeField] private float basicAttackAnimationSpeed;
 
+    private void Start()
+    {
+        transform.LookAt(_attackTarget.transform);
+        transform.rotation *= Quaternion.Euler(0, 90, 0);
+    }
+
     private void FixedUpdate()
     {
         if (_attackTarget)
@@ -30,7 +36,7 @@ public class BasicAttack : MonoBehaviour
             }
         }
 
-        transform.position += (_lastKnownPosition - transform.position).normalized * basicAttackAnimationSpeed * Time.fixedDeltaTime;
+        transform.position += (_lastKnownPosition - transform.position).normalized * (basicAttackAnimationSpeed * Time.fixedDeltaTime);
     }
 
     private void OnDestroy()
@@ -40,10 +46,9 @@ public class BasicAttack : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Triggering! | targetID = " + _attackTarget.GetInstanceID() + " | collision ID = " + other.gameObject
-            .GetInstanceID());
-        if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID())
+        if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID() && other is CapsuleCollider)
         {
+
             _attackTarget.TakeDamage(_actor, _attackDamage);
             OnHit?.Invoke(_attackTarget);
             Destroy(gameObject);

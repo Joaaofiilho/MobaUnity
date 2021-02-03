@@ -5,50 +5,51 @@ using Utils;
 [RequireComponent(typeof(NavMeshAgent))]
 public abstract class WalkableUnit : Unit
 {
-    private NavMeshAgent _agent;
+    protected NavMeshAgent Agent;
 
     protected virtual void Start()
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _agent.updateRotation = false;
+        Agent = GetComponent<NavMeshAgent>();
+        Agent.updateRotation = false;
     }
 
     protected override void Update()
     {
         base.Update();
-        
-        if (!attackTarget) return;
 
-        if (isOnAttackRange)
+        if (attackTarget)
         {
-            StopMoving();
-        }
-        else
-        {
-            Move(PhysicsUtils.Vector3Y0(attackTarget.transform.position));
+            if (isOnAttackRange)
+            {
+                StopMoving();
+            }
+            else
+            {
+                Move(PhysicsUtils.Vector3Y0(attackTarget.transform.position));
+            }
         }
     }
 
     protected void LateUpdate()
     {
-        if (_agent.velocity.sqrMagnitude > Mathf.Epsilon)
+        if (Agent.velocity.sqrMagnitude > Mathf.Epsilon)
         {
-            transform.rotation = Quaternion.LookRotation(_agent.velocity.normalized);
+            transform.rotation = Quaternion.LookRotation(Agent.velocity.normalized);
         }
     }
 
     //Class methods
     protected void StopMoving()
     {
-        _agent.velocity = Vector3.zero;
-        _agent.ResetPath();
+        Agent.velocity = Vector3.zero;
+        Agent.ResetPath();
     }
 
     protected void Move(Vector3 destination)
     {
-        if (_agent.destination != destination)
+        if (Agent.destination != destination)
         {
-            _agent.destination = destination;
+            Agent.destination = destination;
         }
     }
 }
