@@ -8,20 +8,16 @@ public abstract class Unit : MonoBehaviour
     [SerializeField] private float currentHealth;
 
     //Stats section
-    protected Statistics Statistics;
+    protected readonly Statistics Statistics = new Statistics();
 
     //Attack section
     [HideInInspector] public Unit attackTarget;
 
-    [SerializeField] private float basicAttackRange = 6f;
-
     [HideInInspector] public bool isOnAttackRange;
-
-    [SerializeField] private float attackSpeed = 1f;
 
     private float _attackSpeedCounter;
 
-    [SerializeField] private float attackChannelingTime = 0.2f;
+    [SerializeField] protected float attackChannelingTime = 0.2f;
 
     private float _attackChannelingCounter;
 
@@ -33,12 +29,11 @@ public abstract class Unit : MonoBehaviour
     [SerializeField] private bool showAttackRange;
     
     //Callbacks
+    public event Action<float> OnTakeDamage = delegate(float amount) {  };
     
-    //amount of damage
-    public event Action<float> OnTakeDamage = delegate {  };
+    public event Action<float, float> OnHealthChanged = delegate(float currentHealth, float maxHealth) {  };
     
-    //currentHealth and maxHealth
-    public event Action<float, float> OnHealthChanged = delegate {  }; 
+    public event Action<Unit, Unit> OnHit = delegate(Unit actor, Unit target) {  };
 
     /// <summary>
     /// Callback to delegate the amount healed from a unit.
@@ -51,13 +46,12 @@ public abstract class Unit : MonoBehaviour
 
     protected virtual void Awake()
     {
-        _attackSpeedCounter = 1f / attackSpeed;
-        Statistics = new Statistics();
+        _attackSpeedCounter = 1f / Statistics.AttackSpeed;
     }
 
     protected virtual void Update()
     {
-        if (_attackSpeedCounter < 1f / attackSpeed)
+        if (_attackSpeedCounter < 1f / Statistics.AttackSpeed)
         {
             _attackSpeedCounter += Time.deltaTime;
         }
@@ -65,11 +59,11 @@ public abstract class Unit : MonoBehaviour
         if (attackTarget)
         {
             isOnAttackRange = Vector3.Distance(PhysicsUtils.Vector3Y0(transform.position),
-                PhysicsUtils.Vector3Y0(attackTarget.transform.position)) <= basicAttackRange;
+                PhysicsUtils.Vector3Y0(attackTarget.transform.position)) <= Statistics.BasicAttackRange;
 
             if (isOnAttackRange)
             {
-                if (_attackSpeedCounter >= 1f / attackSpeed)
+                if (_attackSpeedCounter >= 1f / Statistics.AttackSpeed)
                 {
                     _attackChannelingCounter += Time.deltaTime;
 
@@ -79,9 +73,13 @@ public abstract class Unit : MonoBehaviour
 
                         var prefab = Instantiate(basicAttackPrefab, transform.position, Quaternion.identity);
                         var basicAttack = prefab.GetComponent<BasicAttack>();
-                        basicAttack.Follow(this, attackTarget, Statistics.AttackDamage, basicAttackAnimationSpeed);
+                        basicAttack.Follow(this, attackTarget, Statistics.AttackDamage, basicAttackAnimationSpeed, OnHit);
                     }
                 }
+            }
+            else
+            {
+                attackTarget = null;
             }
         }
         else
@@ -91,11 +89,20 @@ public abstract class Unit : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        OnTakeDamage = null;
+        OnDied = null;
+        OnHeal = null;
+        OnHit = null;
+        OnHealthChanged = null;
+    }
+
     protected virtual void OnDrawGizmos()
     {
         if (showAttackRange)
         {
-            Gizmos.DrawWireSphere(transform.position, basicAttackRange);
+            Gizmos.DrawWireSphere(transform.position, Statistics.BasicAttackRange);
         }
     }
 
@@ -106,6 +113,7 @@ public abstract class Unit : MonoBehaviour
     public void SetAttackTarget(Unit target)
     {
         attackTarget = target;
+        target.OnDied += OnAttackUnitDie;
     }
 
     //Class methods
@@ -114,7 +122,7 @@ public abstract class Unit : MonoBehaviour
     /// Method called when an actions occurs on this target (Default = [Mouse] Right click).
     /// </summary>
     /// <param name="actor">Who did the action.</param>
-    public virtual void Action(GameObject actor)
+    public virtual void OnReceiveAction(GameObject actor)
     {
         HighLight();
     }
@@ -167,9 +175,22 @@ public abstract class Unit : MonoBehaviour
             OnHeal(amount, amount);
         }
     }
-
+    
+    protected bool IsAttackTarget(Unit unit)
+    {
+        return attackTarget && attackTarget.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID();
+    }
+    
     private void HighLight()
     {
         //TODO: Needs implementation
+    }
+
+    private void OnAttackUnitDie(Unit actor, Unit target)
+    {
+        if (IsAttackTarget(target))
+        {
+            attackTarget = null;
+        }
     }
 }

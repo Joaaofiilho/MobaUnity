@@ -93,7 +93,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8169288003407480761}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 6846616fe7795c54eae2c7552255df87, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5
@@ -115,16 +115,12 @@ MonoBehaviour:
   maxHealth: 500
   currentHealth: 500
   attackTarget: {fileID: 0}
-  basicAttackRange: 6
   isOnAttackRange: 0
-  attackSpeed: 1
   attackChannelingTime: 0.2
   basicAttackAnimationSpeed: 15
   basicAttackPrefab: {fileID: 5120495646752214142, guid: 01fe52c695ce8ad4b8d29dc97c328911,
     type: 3}
   showAttackRange: 0
-  playerCamera: {fileID: 0}
-  gold: 0
 --- !u!114 &8423189209503057458
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,7 +133,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa92a66ed0f3ac4ba372f3d8e715fb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCamera: {fileID: 0}
+  whatIsObstacle:
+    serializedVersion: 2
+    m_Bits: 1024
+  champion: {fileID: 0}
 --- !u!114 &8169288003407480759
 MonoBehaviour:
   m_ObjectHideFlags: 0

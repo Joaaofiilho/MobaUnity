@@ -6,6 +6,11 @@ using Utils;
 public abstract class WalkableUnit : Unit
 {
     protected NavMeshAgent Agent;
+    
+    /// <summary>
+    /// If true, the unit will seek the target;
+    /// </summary>
+    public bool seekTarget = true;
 
     protected virtual void Start()
     {
@@ -15,8 +20,14 @@ public abstract class WalkableUnit : Unit
 
     protected override void Update()
     {
+        var previousAttackTarget = attackTarget;
         base.Update();
-
+        
+        if (seekTarget)
+        {
+            attackTarget = previousAttackTarget;
+        }
+        
         if (attackTarget)
         {
             if (isOnAttackRange)

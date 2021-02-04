@@ -8,10 +8,8 @@ public class BasicAttack : MonoBehaviour
     private Unit _actor;
     private Unit _attackTarget;
     private Vector3 _lastKnownPosition;
-
-    public delegate void HitCallback(Unit target);
-
-    public HitCallback OnHit;
+    
+    public Action<Unit, Unit> OnHit = delegate(Unit actor, Unit target) {  };
 
     [SerializeField] private float basicAttackAnimationSpeed;
 
@@ -46,20 +44,28 @@ public class BasicAttack : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID() && other is CapsuleCollider)
+        if (_attackTarget)
         {
+            if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID() && other is CapsuleCollider)
+            {
 
-            _attackTarget.TakeDamage(_actor, _attackDamage);
-            OnHit?.Invoke(_attackTarget);
+                _attackTarget.TakeDamage(_actor, _attackDamage);
+                OnHit(_actor, _attackTarget);
+                Destroy(gameObject);
+            }
+        }
+        else
+        {
             Destroy(gameObject);
         }
     }
 
-    public void Follow(Unit actor, Unit target, float damage, float basicAttackAnimationSpeed)
+    public void Follow(Unit actor, Unit target, float damage, float basicAttackAnimationSpeed, Action<Unit, Unit> OnHit)
     {
         _attackDamage = damage;
         _actor = actor;
         _attackTarget = target;
         this.basicAttackAnimationSpeed = basicAttackAnimationSpeed;
+        this.OnHit += OnHit;
     }
 }

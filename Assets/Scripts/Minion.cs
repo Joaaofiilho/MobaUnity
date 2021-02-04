@@ -9,9 +9,10 @@ public class Minion : WalkableUnit
     private int _destinationIndex;
 
     private float _goldValue = 20f;
-
-    public override void Action(GameObject actor)
+    
+    public override void OnReceiveAction(GameObject actor)
     {
+        base.OnReceiveAction(actor);
         if (actor.CompareTag(Tags.Champion.Value))
         {
             var champion = actor.GetComponent<Champion>();

@@ -173,7 +173,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 849783691891819989}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 6846616fe7795c54eae2c7552255df87, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.5
@@ -195,9 +195,7 @@ MonoBehaviour:
   maxHealth: 120
   currentHealth: 120
   attackTarget: {fileID: 0}
-  basicAttackRange: 6
   isOnAttackRange: 0
-  attackSpeed: 1
   attackChannelingTime: 0.2
   basicAttackAnimationSpeed: 0.5
   basicAttackPrefab: {fileID: 5120495646752214142, guid: 01fe52c695ce8ad4b8d29dc97c328911,

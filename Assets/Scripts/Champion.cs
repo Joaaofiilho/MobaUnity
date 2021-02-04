@@ -5,52 +5,43 @@ using Utils;
 
 public class Champion : WalkableUnit
 {
-    public Camera playerCamera;
-    
     private float _gold;
     
     //Callbacks
-    public event Action<float> OnGoldChanged = delegate(float gold) {  };
-    
+    public event Action<float> OnGoldChanged = delegate(float gold) { };
+
     protected override void Start()
     {
         base.Start();
         Statistics.AttackDamage = 62f;
     }
-
-    public override void Action(GameObject actor)
+    
+    /// <summary>
+    /// Method called when an actions occurs on this target (Default = [Mouse] Right click).
+    /// </summary>
+    /// <param name="target">The target of the action.</param>
+    /// <param name="hitPoint">The position where the ray intercepted the object.</param>
+    public void OnDoAction(GameObject target, Vector3 hitPoint)
     {
-        base.Action(actor);
-
         attackTarget = null;
 
-        //Obtendo o raio apontando da posição da câmera até o ponto da posição do clique do mouse
-        var ray = playerCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-
-        //Verificando se o raio acerta algum GameObject
-        if (!Physics.Raycast(ray, out var hit)) return;
-
-        var hitGameObject = hit.collider.gameObject;
-
-        if (!hitGameObject) return;
-
-        if (hitGameObject.CompareTag(Tags.Minion.Value))
+        if (target.CompareTag(Tags.Minion.Value))
         {
-            hitGameObject.GetComponent<Minion>().Action(gameObject);
+            target.GetComponent<Minion>().OnReceiveAction(gameObject);
         }
-        else if (hitGameObject.CompareTag(Tags.Map.Value))
+        else if (target.CompareTag(Tags.Map.Value))
         {
             StopMoving();
-            Move(hit.point);
+            Move(hitPoint);
         }
     }
-    
+
     //Base class methods
     protected override void OnDie(Unit actor)
     {
         //TODO: What should happen when it dies
     }
-    
+
     //Class methods
     public void StopAll()
     {
@@ -58,7 +49,7 @@ public class Champion : WalkableUnit
         attackTarget = null;
     }
 
-    
+
     /// <summary>
     /// Increases the champion's gold amount.
     /// <para>The gold amount must be greater than 0.</para>

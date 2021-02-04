@@ -39,5 +39,15 @@ namespace Utils
                     return null;
             }
         }
+
+        public static String[] TagsOfAllUnits()
+        {
+            return new[]
+            {
+                Tags.Champion.Value,
+                Tags.Minion.Value,
+                Tags.Tower.Value
+            };
+        }
     }
 }
