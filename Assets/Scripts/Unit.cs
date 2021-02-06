@@ -2,16 +2,18 @@
 using UnityEngine;
 using Utils;
 
+[RequireComponent(typeof(Unit))]
 public abstract class Unit : MonoBehaviour
 {
     [SerializeField] private float maxHealth;
     [SerializeField] private float currentHealth;
+    protected bool ShouldLoseTargetWhenOutsideRange;
 
     //Stats section
     protected readonly Statistics Statistics = new Statistics();
 
     //Attack section
-    [HideInInspector] public Unit attackTarget;
+    protected Unit attackTarget { get; private set; }
 
     [HideInInspector] public bool isOnAttackRange;
 
@@ -27,23 +29,8 @@ public abstract class Unit : MonoBehaviour
 
     //Debug section
     [SerializeField] private bool showAttackRange;
-    
-    //Callbacks
-    public event Action<float> OnTakeDamage = delegate(float amount) {  };
-    
-    public event Action<float, float> OnHealthChanged = delegate(float currentHealth, float maxHealth) {  };
-    
-    public event Action<Unit, Unit> OnHit = delegate(Unit actor, Unit target) {  };
 
-    /// <summary>
-    /// Callback to delegate the amount healed from a unit.
-    /// </summary>
-    /// /// <param name="amount">The amount of the heal, dependent on the current health.</param>
-    /// <param name="totalAmount">The total amount of the heal, independent of the current health.</param>
-    public event Action<float, float> OnHeal = delegate(float amount, float totalAmount) {  };
-    
-    public event Action<Unit, Unit> OnDied = delegate(Unit actor, Unit target) { };
-
+    //Unity methods
     protected virtual void Awake()
     {
         _attackSpeedCounter = 1f / Statistics.AttackSpeed;
@@ -73,13 +60,18 @@ public abstract class Unit : MonoBehaviour
 
                         var prefab = Instantiate(basicAttackPrefab, transform.position, Quaternion.identity);
                         var basicAttack = prefab.GetComponent<BasicAttack>();
-                        basicAttack.Follow(this, attackTarget, Statistics.AttackDamage, basicAttackAnimationSpeed, OnHit);
+
+                        OnAttack();
+                        basicAttack.Fire(this, attackTarget, basicAttackAnimationSpeed, GetBasicAttackDamage());
                     }
                 }
             }
             else
             {
-                attackTarget = null;
+                if (ShouldLoseTargetWhenOutsideRange)
+                {
+                    SetAttackTarget(null);
+                }
             }
         }
         else
@@ -87,15 +79,6 @@ public abstract class Unit : MonoBehaviour
             isOnAttackRange = false;
             _attackChannelingCounter = 0;
         }
-    }
-
-    private void OnDestroy()
-    {
-        OnTakeDamage = null;
-        OnDied = null;
-        OnHeal = null;
-        OnHit = null;
-        OnHealthChanged = null;
     }
 
     protected virtual void OnDrawGizmos()
@@ -106,6 +89,107 @@ public abstract class Unit : MonoBehaviour
         }
     }
 
+    //Actions, abstract and overridable methods
+
+    //Callbacks
+
+    public event Action<Unit, Unit> OnDieCallback = delegate(Unit actor, Unit target) { };
+
+    protected virtual void OnDie(Unit actor, Unit target)
+    {
+        if (actor && actor.IsAttackTarget(target))
+        {
+            actor.SetAttackTarget(null);
+        }
+
+        OnDieCallback(actor, target);
+    }
+
+    public event Action<Unit, Unit, AttackInformation[]> OnTakeDamageCallback =
+        delegate(Unit actor, Unit target, AttackInformation[] attackInformation) { };
+
+    /// <summary>
+    /// Called when this unit takes any damage that affects its health.
+    /// This is only called if the hit or spell removed health of this unit.
+    /// </summary>
+    /// <param name="actor"></param>
+    /// <param name="target"></param>
+    /// <param name="attackInformations">The attack information. The numbers are after the armor and magic resistance calculations.</param>
+    protected virtual void OnTakeDamage(Unit actor, Unit target, AttackInformation[] attackInformations)
+    {
+        DamagePopup.Create(transform, attackInformations);
+            
+        OnTakeDamageCallback(actor, target, attackInformations);
+    }
+
+    public event Action<float, float> OnHealthChangedCallback = delegate(float currentHealth, float maxHealth) { };
+
+    protected virtual void OnHealthChanged(float currentHealth, float maxHealth)
+    {
+        OnHealthChangedCallback(currentHealth, maxHealth);
+    }
+
+    public event Action<Unit, Unit, AttackInformation[]> OnHitCallback =
+        delegate(Unit actor, Unit target, AttackInformation[] attackInformations) { };
+
+    /// <summary>
+    /// Called everytime a basic attack hits this unit.
+    /// </summary>
+    /// <param name="actor">Who performed the basic attack.</param>
+    /// <param name="target">The target who got attacked by the basic attack.</param>
+    /// <param name="attackInformations">The attack information. The numbers are after the armor and magic resistance calculations.
+    /// If the size is 0, then no damage has been dealt.</param>
+    protected virtual void OnHit(Unit actor, Unit target, AttackInformation[] attackInformations)
+    {
+        OnHitCallback(actor, target, attackInformations);
+    }
+
+    public event Action<float, float> OnHealCallback = delegate(float amount, float totalAmount) { };
+
+    protected virtual void OnHeal(float amount, float totalAmount)
+    {
+        OnHealCallback(amount, totalAmount);
+    }
+
+    public event Action<GameObject> OnSelectCallback = delegate(GameObject actor) { };
+
+    /// <summary>
+    /// Method called when a selection occurs on this target (Default = [Mouse] Left click).
+    /// </summary>
+    /// <param name="actor">Who did the selection.</param>
+    public virtual void Select(GameObject actor)
+    {
+        OnSelectCallback(actor);
+    }
+
+    public event Action<Unit> OnKillUnitCallback = delegate(Unit unit) { };
+
+    protected virtual void OnKillUnit(Unit target)
+    {
+        OnKillUnitCallback(target);
+    }
+
+    public event Action OnAttackCallback = delegate { };
+
+    protected virtual void OnAttack()
+    {
+        OnAttackCallback();
+    }
+
+    public event Action<Unit> OnAttackTargetChangedCallback = delegate { };
+
+    protected virtual void OnAttackTargetChanged(Unit target)
+    {
+        OnAttackTargetChangedCallback(target);
+    }
+
+    protected virtual AttackInformation[] GetBasicAttackDamage()
+    {
+        return new[] {new AttackInformation(Statistics.AttackDamage, DamageType.AttackDamage)};
+    }
+
+    //Class methods
+
     /// <summary>
     /// Tries to perform an attack on the desired target.
     /// </summary>
@@ -113,10 +197,56 @@ public abstract class Unit : MonoBehaviour
     public void SetAttackTarget(Unit target)
     {
         attackTarget = target;
-        target.OnDied += OnAttackUnitDie;
+        OnAttackTargetChanged(attackTarget);
     }
 
-    //Class methods
+    public void TakeDamage(Unit actor, AttackInformation[] attackInformations)
+    {
+        //The real damage received, after applying armor and magic resistance calculation.
+        var receivedDamageInformation = new AttackInformation[attackInformations.Length];
+
+        for (int i = 0; i < attackInformations.Length; i++)
+        {
+            //TODO: calculate damage based on damageType, applying armor and magic resistance calculations. Remember: an attack damage can be already 0.
+            currentHealth -= attackInformations[i].DamageAmount;
+
+            //TODO: For now, the damage dealt will be 100%.
+            receivedDamageInformation[i] = attackInformations[i];
+        }
+
+        if (receivedDamageInformation.Length > 0)
+        {
+            OnTakeDamage(actor, this, receivedDamageInformation);
+        }
+
+        actor.OnHit(actor, this, receivedDamageInformation);
+
+        OnHealthChanged(currentHealth, maxHealth);
+
+        if (currentHealth <= 0)
+        {
+            OnDie(actor, this);
+            actor.OnKillUnit(this);
+        }
+    }
+
+    public void Heal(Unit actor, float amount)
+    {
+        var previousHealth = currentHealth;
+
+        if (currentHealth + amount >= maxHealth)
+        {
+            currentHealth = maxHealth;
+            OnHealthChangedCallback(currentHealth, maxHealth);
+            OnHealCallback(maxHealth - previousHealth, amount);
+        }
+        else
+        {
+            currentHealth += amount;
+            OnHealthChangedCallback(currentHealth, maxHealth);
+            OnHealCallback(amount, amount);
+        }
+    }
 
     /// <summary>
     /// Method called when an actions occurs on this target (Default = [Mouse] Right click).
@@ -127,70 +257,13 @@ public abstract class Unit : MonoBehaviour
         HighLight();
     }
 
-
-    /// <summary>
-    /// Method called when a selection occurs on this target (Default = [Mouse] Left click).
-    /// </summary>
-    /// <param name="actor">Who did the selection.</param>
-    public virtual void Select(GameObject actor)
-    {
-    }
-
-    protected virtual void OnKillUnit(Unit target)
-    {
-        
-    }
-
-    protected abstract void OnDie(Unit actor);
-
-    public void TakeDamage(Unit actor, float amount, DamageType damageType = DamageType.TrueDamage)
-    {
-        currentHealth -= amount;
-        OnTakeDamage(amount);
-        
-        OnHealthChanged(currentHealth, maxHealth);
-        
-        if (currentHealth <= 0)
-        {
-            OnDie(actor);
-            actor.OnKillUnit(this);
-            OnDied(actor, this);
-        }
-    }
-
-    public void Heal(Unit actor, float amount)
-    {
-        var previousHealth = currentHealth;
-        
-        if (currentHealth + amount >= maxHealth)
-        {
-            currentHealth = maxHealth;
-            OnHealthChanged(currentHealth, maxHealth);
-            OnHeal(maxHealth - previousHealth, amount);
-        }
-        else
-        {
-            currentHealth += amount;
-            OnHealthChanged(currentHealth, maxHealth);
-            OnHeal(amount, amount);
-        }
-    }
-    
-    protected bool IsAttackTarget(Unit unit)
-    {
-        return attackTarget && attackTarget.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID();
-    }
-    
     private void HighLight()
     {
         //TODO: Needs implementation
     }
 
-    private void OnAttackUnitDie(Unit actor, Unit target)
+    private bool IsAttackTarget(Unit unit)
     {
-        if (IsAttackTarget(target))
-        {
-            attackTarget = null;
-        }
+        return attackTarget && attackTarget.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID();
     }
 }

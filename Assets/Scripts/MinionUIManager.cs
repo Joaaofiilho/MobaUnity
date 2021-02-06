@@ -8,7 +8,7 @@ public class MinionUIManager : MonoBehaviour
     
     void Start()
     {
-        unit.OnHealthChanged += OnHealthChanged;
+        unit.OnHealthChangedCallback += OnHealthChangedCallback;
     }
 
     private void LateUpdate()
@@ -16,7 +16,7 @@ public class MinionUIManager : MonoBehaviour
         healthBar.transform.parent.LookAt(Camera.main.transform);
     }
 
-    private void OnHealthChanged(float currentHealth, float maxHealth)
+    private void OnHealthChangedCallback(float currentHealth, float maxHealth)
     {
         healthBar.fillAmount = Mathf.Max(currentHealth, 0) / maxHealth;
     }

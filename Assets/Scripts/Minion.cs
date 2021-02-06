@@ -21,7 +21,7 @@ public class Minion : WalkableUnit
     }
 
     //Base class methods
-    protected override void OnDie(Unit actor)
+    protected override void OnDie(Unit actor, Unit target)
     {
         if (actor.CompareTag(Tags.Champion.Value))
         {

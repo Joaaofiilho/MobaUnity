@@ -1,14 +1,10 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Utils;
 
 public class Champion : WalkableUnit
 {
     private float _gold;
-    
-    //Callbacks
-    public event Action<float> OnGoldChanged = delegate(float gold) { };
 
     protected override void Start()
     {
@@ -23,7 +19,7 @@ public class Champion : WalkableUnit
     /// <param name="hitPoint">The position where the ray intercepted the object.</param>
     public void OnDoAction(GameObject target, Vector3 hitPoint)
     {
-        attackTarget = null;
+        SetAttackTarget(null);
 
         if (target.CompareTag(Tags.Minion.Value))
         {
@@ -35,20 +31,31 @@ public class Champion : WalkableUnit
             Move(hitPoint);
         }
     }
-
-    //Base class methods
-    protected override void OnDie(Unit actor)
+    
+    //Overrides e Callbacks
+    protected override AttackInformation[] GetBasicAttackDamage()
     {
-        //TODO: What should happen when it dies
+        return new[]
+        {
+            new AttackInformation(Statistics.AttackDamage / 2f, DamageType.AttackDamage),
+            new AttackInformation(Statistics.AttackDamage, DamageType.SpellDamage),
+            new AttackInformation(Statistics.AttackDamage / 4f, DamageType.TrueDamage),
+        };
     }
 
+    public event Action<float> OnGoldChangedCallback = delegate(float gold) { };
+
+    protected virtual void OnGoldChanged(float gold)
+    {
+        OnGoldChanged(gold);    
+    }
+    
     //Class methods
     public void StopAll()
     {
         StopMoving();
-        attackTarget = null;
+        SetAttackTarget(null);
     }
-
 
     /// <summary>
     /// Increases the champion's gold amount.
@@ -58,6 +65,6 @@ public class Champion : WalkableUnit
     public void AddGold(float amount)
     {
         _gold += amount;
-        OnGoldChanged(_gold);
+        OnGoldChangedCallback(_gold);
     }
 }

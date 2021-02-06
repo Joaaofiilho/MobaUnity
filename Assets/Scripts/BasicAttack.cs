@@ -4,20 +4,11 @@ using Utils;
 
 public class BasicAttack : MonoBehaviour
 {
-    private float _attackDamage;
+    private AttackInformation[] _attackInformations;
     private Unit _actor;
     private Unit _attackTarget;
     private Vector3 _lastKnownPosition;
-    
-    public Action<Unit, Unit> OnHit = delegate(Unit actor, Unit target) {  };
-
-    [SerializeField] private float basicAttackAnimationSpeed;
-
-    private void Start()
-    {
-        transform.LookAt(_attackTarget.transform);
-        transform.rotation *= Quaternion.Euler(0, 90, 0);
-    }
+    private float _basicAttackAnimationSpeed;
 
     private void FixedUpdate()
     {
@@ -34,12 +25,13 @@ public class BasicAttack : MonoBehaviour
             }
         }
 
-        transform.position += (_lastKnownPosition - transform.position).normalized * (basicAttackAnimationSpeed * Time.fixedDeltaTime);
+        transform.position = Vector3.MoveTowards(transform.position, _lastKnownPosition,
+            _basicAttackAnimationSpeed * Time.fixedDeltaTime);
     }
 
-    private void OnDestroy()
+    private void LateUpdate()
     {
-        OnHit = null;
+        transform.LookAt(Camera.main.transform.position);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -48,9 +40,7 @@ public class BasicAttack : MonoBehaviour
         {
             if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID() && other is CapsuleCollider)
             {
-
-                _attackTarget.TakeDamage(_actor, _attackDamage);
-                OnHit(_actor, _attackTarget);
+                _attackTarget.TakeDamage(_actor, _attackInformations);
                 Destroy(gameObject);
             }
         }
@@ -60,12 +50,16 @@ public class BasicAttack : MonoBehaviour
         }
     }
 
-    public void Follow(Unit actor, Unit target, float damage, float basicAttackAnimationSpeed, Action<Unit, Unit> OnHit)
+    public void Fire(Unit actor, Unit target, float basicAttackAnimationSpeed, AttackInformation[] attackInformations)
     {
-        _attackDamage = damage;
         _actor = actor;
         _attackTarget = target;
-        this.basicAttackAnimationSpeed = basicAttackAnimationSpeed;
-        this.OnHit += OnHit;
+        _basicAttackAnimationSpeed = basicAttackAnimationSpeed;
+        _attackInformations = attackInformations;
+    }
+
+    public void Fire(Unit actor, Unit target, float basicAttackAnimationSpeed, AttackInformation attackInformation)
+    {
+        Fire(actor, target, basicAttackAnimationSpeed, new []{ attackInformation });
     }
 }
