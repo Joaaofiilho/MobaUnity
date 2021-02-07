@@ -38,7 +38,7 @@ public class BasicAttack : MonoBehaviour
     {
         if (_attackTarget)
         {
-            if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID() && other is CapsuleCollider)
+            if (other.gameObject.GetInstanceID() == _attackTarget.gameObject.GetInstanceID() && !other.isTrigger)
             {
                 _attackTarget.TakeDamage(_actor, _attackInformations);
                 Destroy(gameObject);

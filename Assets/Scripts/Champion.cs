@@ -9,7 +9,7 @@ public class Champion : WalkableUnit
     protected override void Start()
     {
         base.Start();
-        statistics.AttackDamage = 62f;
+        statistics.attackDamage = 62f;
     }
     
     /// <summary>
@@ -21,19 +21,19 @@ public class Champion : WalkableUnit
     {
         SetAttackTarget(null);
 
-        if (target.CompareTag(Tags.Minion.Value))
+        if (target.CompareTag(Tags.Minion.Value) || target.CompareTag(Tags.Tower.Value))
         {
-            var minion = target.GetComponent<Minion>();
+            var unit = target.GetComponent<Unit>();
 
-            if (minion.team == team)
+            if (unit.team == team)
             {
                 StopMoving();
                 Move(hitPoint);
             }
             else
             {
-                minion.OnReceiveAction(gameObject);
-                SetAttackTarget(minion);
+                unit.OnReceiveAction(gameObject);
+                SetAttackTarget(unit);
             }
         }
         else if (target.CompareTag(Tags.Map.Value))
@@ -44,13 +44,18 @@ public class Champion : WalkableUnit
     }
     
     //Overrides e Callbacks
+    protected override void WhenLoseTarget()
+    {
+        StopMoving();
+    }
+
     protected override AttackInformation[] GetBasicAttackDamage()
     {
         return new[]
         {
-            new AttackInformation(statistics.AttackDamage / 2f, DamageType.AttackDamage),
-            new AttackInformation(statistics.AttackDamage, DamageType.SpellDamage),
-            new AttackInformation(statistics.AttackDamage / 4f, DamageType.TrueDamage),
+            new AttackInformation(statistics.attackDamage / 2f, DamageType.AttackDamage),
+            new AttackInformation(statistics.attackDamage, DamageType.SpellDamage),
+            new AttackInformation(statistics.attackDamage / 4f, DamageType.TrueDamage),
         };
     }
 

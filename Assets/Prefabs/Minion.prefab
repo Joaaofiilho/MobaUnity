@@ -96,6 +96,7 @@ GameObject:
   - component: {fileID: 849783691891819982}
   - component: {fileID: 849783691891819981}
   - component: {fileID: 6895770416396927159}
+  - component: {fileID: 8659588061022815452}
   m_Layer: 9
   m_Name: Minion
   m_TagString: Minion
@@ -195,9 +196,16 @@ MonoBehaviour:
   team: 0
   maxHealth: 120
   currentHealth: 120
+  statistics:
+    attackDamage: 32
+    basicAttackRange: 6
+    attackSpeed: 0.67
+    spellDamage: 0
+    armor: 32
+    magicResistance: 22
   isOnAttackRange: 0
   attackChannelingTime: 0.2
-  basicAttackAnimationSpeed: 0.5
+  basicAttackAnimationSpeed: 5
   basicAttackPrefab: {fileID: 5120495646752214142, guid: 01fe52c695ce8ad4b8d29dc97c328911,
     type: 3}
   showAttackRange: 0
@@ -215,7 +223,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3
+  m_Speed: 2.5
   m_Acceleration: 60
   avoidancePriority: 50
   m_AngularSpeed: 2500
@@ -270,6 +278,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   healthBar: {fileID: 4321498309207265023}
   unit: {fileID: 849783691891819983}
+--- !u!135 &8659588061022815452
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 849783691891819989}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 7.5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1015260573986412462
 GameObject:
   m_ObjectHideFlags: 0
@@ -328,8 +349,8 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: -2145010453
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!114 &1979008804751426173
 MonoBehaviour:

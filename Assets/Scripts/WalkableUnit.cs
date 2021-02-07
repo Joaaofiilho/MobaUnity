@@ -5,12 +5,13 @@ using Utils;
 [RequireComponent(typeof(NavMeshAgent))]
 public abstract class WalkableUnit : Unit
 {
-    protected NavMeshAgent Agent;
-
+    private NavMeshAgent _agent;
+    
+    //Unity methods
     protected override void Start()
     {
-        Agent = GetComponent<NavMeshAgent>();
-        Agent.updateRotation = false;
+        _agent = GetComponent<NavMeshAgent>();
+        _agent.updateRotation = false;
     }
 
     protected override void Update()
@@ -21,35 +22,58 @@ public abstract class WalkableUnit : Unit
         {
             if (isOnAttackRange)
             {
-                StopMoving();
+                PauseMovement(true);
             }
             else
             {
                 Move(PhysicsUtils.Vector3Y0(attackTarget.transform.position));
             }
         }
+        else
+        {
+            PauseMovement(false);
+        }
     }
 
     protected void LateUpdate()
     {
-        if (Agent.velocity.sqrMagnitude > Mathf.Epsilon)
+        if (_agent.velocity.sqrMagnitude > Mathf.Epsilon)
         {
-            transform.rotation = Quaternion.LookRotation(Agent.velocity.normalized);
+            transform.rotation = Quaternion.LookRotation(_agent.velocity.normalized);
         }
     }
+    
+    //Abstract methods
+    protected abstract void WhenLoseTarget();
+    
+    //Override methods
+    protected override void OnAttackTargetChanged(Entity target)
+    {
+        if (!target)
+        {
+            WhenLoseTarget();
+        }
 
+        base.OnAttackTargetChanged(target);
+    }
+    
     //Class methods
     protected void StopMoving()
     {
-        Agent.velocity = Vector3.zero;
-        Agent.ResetPath();
+        _agent.velocity = Vector3.zero;
+        _agent.ResetPath();
+    }
+
+    protected void PauseMovement(bool shouldPause)
+    {
+        _agent.isStopped = shouldPause;
     }
 
     protected void Move(Vector3 destination)
     {
-        if (Agent.destination != destination)
+        if (_agent.destination != destination)
         {
-            Agent.destination = destination;
+            _agent.destination = destination;
         }
     }
 }

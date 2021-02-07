@@ -1,12 +1,11 @@
 ﻿using System;
+using JetBrains.Annotations;
 using UnityEngine;
 using Utils;
 
 [RequireComponent(typeof(Unit))]
 public abstract class Unit : Entity
 {
-    protected bool ShouldLoseTargetWhenOutsideRange;
-
     //Stats section
     [SerializeField] protected Statistics statistics = new Statistics();
 
@@ -32,7 +31,7 @@ public abstract class Unit : Entity
     protected override void Awake()
     {
         base.Awake();
-        _attackSpeedCounter = 1f / statistics.AttackSpeed;
+        _attackSpeedCounter = 1f / statistics.attackSpeed;
     }
 
     protected virtual void Start()
@@ -42,7 +41,7 @@ public abstract class Unit : Entity
     protected override void Update()
     {
         base.Update();
-        if (_attackSpeedCounter < 1f / statistics.AttackSpeed)
+        if (_attackSpeedCounter < 1f / statistics.attackSpeed)
         {
             _attackSpeedCounter += Time.deltaTime;
         }
@@ -50,11 +49,11 @@ public abstract class Unit : Entity
         if (attackTarget)
         {
             isOnAttackRange = Vector3.Distance(PhysicsUtils.Vector3Y0(transform.position),
-                PhysicsUtils.Vector3Y0(attackTarget.transform.position)) <= statistics.BasicAttackRange;
+                PhysicsUtils.Vector3Y0(attackTarget.transform.position)) <= statistics.basicAttackRange;
 
             if (isOnAttackRange)
             {
-                if (_attackSpeedCounter >= 1f / statistics.AttackSpeed)
+                if (_attackSpeedCounter >= 1f / statistics.attackSpeed)
                 {
                     _attackChannelingCounter += Time.deltaTime;
 
@@ -70,13 +69,6 @@ public abstract class Unit : Entity
                     }
                 }
             }
-            else
-            {
-                if (ShouldLoseTargetWhenOutsideRange)
-                {
-                    SetAttackTarget(null);
-                }
-            }
         }
         else
         {
@@ -89,19 +81,19 @@ public abstract class Unit : Entity
     {
         if (showAttackRange)
         {
-            Gizmos.DrawWireSphere(transform.position, statistics.BasicAttackRange);
+            Gizmos.DrawWireSphere(transform.position, statistics.basicAttackRange);
         }
     }
 
     //Actions, abstract and overridable methods
     protected override void OnDie(Unit actor, Entity target)
     {
-        base.OnDie(actor, target);
-        
         if (actor && actor.IsAttackTarget(target))
         {
             actor.SetAttackTarget(null);
         }
+        
+        base.OnDie(actor, target);
     }
 
     protected override void OnTakeDamage(Unit actor, Entity target, AttackInformation[] originalAttackInformations,
@@ -122,7 +114,7 @@ public abstract class Unit : Entity
     /// <param name="target">The target who got attacked by the basic attack.</param>
     /// <param name="attackInformations">The attack information. The numbers are after the armor and magic resistance calculations.
     /// If the size is 0, then no damage has been dealt.</param>
-    protected virtual void OnHit(Unit actor, Unit target, AttackInformation[] attackInformations)
+    protected virtual void OnHit([CanBeNull] Unit actor, [NotNull] Unit target, AttackInformation[] attackInformations)
     {
         OnHitCallback(actor, target, attackInformations);
     }
@@ -154,7 +146,7 @@ public abstract class Unit : Entity
 
     protected virtual AttackInformation[] GetBasicAttackDamage()
     {
-        return new[] {new AttackInformation(statistics.AttackDamage, DamageType.AttackDamage)};
+        return new[] {new AttackInformation(statistics.attackDamage, DamageType.AttackDamage)};
     }
 
     //Class methods

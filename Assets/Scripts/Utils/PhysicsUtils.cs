@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Utils
@@ -28,6 +29,29 @@ namespace Utils
             }
 
             return nearestTransform;
+        }
+        
+        public static Entity FindNearestEnemyEntity(Transform transform, Teams team, List<Entity> entities)
+        {
+            var bestDistance = float.MaxValue;
+            Entity nearestEntity = null;
+
+            var position = PhysicsUtils.Vector3Y0(transform.position);
+
+            foreach (var entity in entities)
+            {
+                if (entity && entity.team != team)
+                {
+                    var newDistance = Vector3.Distance(position, PhysicsUtils.Vector3Y0(entity.transform.position));
+                    if (newDistance < bestDistance)
+                    {
+                        bestDistance = newDistance;
+                        nearestEntity = entity;
+                    }
+                }
+            }
+
+            return nearestEntity;
         }
     }
 }

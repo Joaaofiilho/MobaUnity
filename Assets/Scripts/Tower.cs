@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using Utils;
 
 public class Tower : Unit
@@ -11,11 +8,11 @@ public class Tower : Unit
     private Unit _priorityAttackChampionTarget;
     private SphereCollider _sphereCollider;
 
-    private readonly List<Unit> _nearEnemyMinions = new List<Unit>();
+    private readonly List<Entity> _nearEnemyMinions = new List<Entity>();
     private readonly List<Unit> _nearEnemyChampions = new List<Unit>();
 
     [SerializeField] private float increaseDamageCooldown = 1f;
-    private float _increaseDamageCooldownRemaining;
+    private float _increaseDamageTimeRemaining;
     private int _numOfSequentialBasicAttacks;
     [SerializeField] private int maxSequentialAttackDamageIncrease = 4;
     [SerializeField] [Range(0, 1)] private float increaseDamageRate = 0.2f;
@@ -24,27 +21,37 @@ public class Tower : Unit
     protected override void Awake()
     {
         base.Awake();
-        ShouldLoseTargetWhenOutsideRange = true;
-        statistics.AttackDamage = 32f;
-        statistics.BasicAttackRange = 8f;
-        statistics.AttackSpeed = 0.65f;
+        statistics.attackDamage = 32f;
+        statistics.basicAttackRange = 8f;
+        statistics.attackSpeed = 0.65f;
         attackChannelingTime = 0.5f;
-        _increaseDamageCooldownRemaining = increaseDamageCooldown;
+        _increaseDamageTimeRemaining = increaseDamageCooldown;
 
         _sphereCollider = GetComponentInChildren<SphereCollider>();
-        _sphereCollider.radius = transform.localScale.y / (statistics.BasicAttackRange / 2);
+        _sphereCollider.radius = statistics.basicAttackRange / transform.localScale.y;
+    }
+
+    protected override void OnDrawGizmos()
+    {
+        base.OnDrawGizmos();
+        
+        Gizmos.DrawWireSphere(transform.position, statistics.basicAttackRange / transform.localScale.y);
     }
 
     protected override void Update()
     {
         base.Update();
-
-        if (_increaseDamageCooldownRemaining <= 0)
+        if (!isOnAttackRange && attackTarget)
+        {
+            SetAttackTarget(null);
+        }
+        
+        if (_increaseDamageTimeRemaining <= 0)
         {
             _numOfSequentialBasicAttacks = 0;
         }
 
-        _increaseDamageCooldownRemaining -= Time.deltaTime;
+        _increaseDamageTimeRemaining -= Time.deltaTime;
     }
     
     private void FixedUpdate()
@@ -55,17 +62,17 @@ public class Tower : Unit
         }
         else if (!attackTarget)
         {
-            Unit nearestEnemyMinion = null;
+            Entity nearestEnemyMinion = null;
             if (_nearEnemyMinions.Count > 0)
             {
-                nearestEnemyMinion = FindNearestEnemyUnit(_nearEnemyMinions);
+                nearestEnemyMinion = PhysicsUtils.FindNearestEnemyEntity(transform, team, _nearEnemyMinions);
 
                 SetAttackTarget(nearestEnemyMinion);
             }
             
             if (!nearestEnemyMinion && _nearEnemyChampions.Count > 0)
             {
-                var nearestChampion = FindNearestEnemyUnit(_nearEnemyChampions);
+                var nearestChampion = PhysicsUtils.FindNearestEnemyEntity(transform, team, _nearEnemyChampions.ConvertAll(unit => unit as Entity));
 
                 SetAttackTarget(nearestChampion);
             }
@@ -142,7 +149,7 @@ public class Tower : Unit
         return new[]
         {
             new AttackInformation(
-                increaseDamageRate * statistics.AttackDamage * _numOfSequentialBasicAttacks + statistics.AttackDamage,
+                increaseDamageRate * statistics.attackDamage * _numOfSequentialBasicAttacks + statistics.attackDamage,
                 DamageType.AttackDamage)
         };
     }
@@ -150,7 +157,7 @@ public class Tower : Unit
     protected override void OnAttack()
     {
         base.OnAttack();
-        _increaseDamageCooldownRemaining = increaseDamageCooldown;
+        _increaseDamageTimeRemaining = increaseDamageCooldown;
 
         if (_numOfSequentialBasicAttacks < maxSequentialAttackDamageIncrease)
         {
@@ -159,29 +166,6 @@ public class Tower : Unit
     }
 
     //Class methods
-    private Unit FindNearestEnemyUnit(List<Unit> units)
-    {
-        var bestDistance = float.MaxValue;
-        Unit nearestUnit = null;
-
-        var position = PhysicsUtils.Vector3Y0(transform.position);
-
-        foreach (var unit in units)
-        {
-            if (unit && unit.team != team)
-            {
-                var newDistance = Vector3.Distance(position, PhysicsUtils.Vector3Y0(unit.transform.position));
-                if (newDistance < bestDistance)
-                {
-                    bestDistance = newDistance;
-                    nearestUnit = unit;
-                }
-            }
-        }
-
-        return nearestUnit;
-    }
-
     private void OnChampionHitOther(Unit actor, Unit target, AttackInformation[] attackInformations)
     {
         if (!_priorityAttackChampionTarget)
@@ -200,6 +184,7 @@ public class Tower : Unit
             actor.gameObject.GetInstanceID())
         {
             _priorityAttackChampionTarget = null;
+            SetAttackTarget(null);
         }
     }
 

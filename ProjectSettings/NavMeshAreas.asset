@@ -11,8 +11,8 @@ NavMeshProjectSettings:
     cost: 1
   - name: Jump
     cost: 31
-  - name: Minion Route
-    cost: 0.001
+  - name: 
+    cost: 0
   - name: 
     cost: 1
   - name: 
@@ -75,8 +75,8 @@ NavMeshProjectSettings:
     agentTypeID: 0
     agentRadius: 0.3
     agentHeight: 1.7
-    agentSlope: 60
-    agentClimb: 0.85
+    agentSlope: 0
+    agentClimb: 0
     ledgeDropHeight: 0
     maxJumpAcrossDistance: 0
     minRegionArea: 2

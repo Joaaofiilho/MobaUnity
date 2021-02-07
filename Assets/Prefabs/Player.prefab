@@ -113,8 +113,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   team: 0
-  maxHealth: 500
-  currentHealth: 500
+  maxHealth: 1200
+  currentHealth: 1200
+  statistics:
+    attackDamage: 64
+    basicAttackRange: 6
+    attackSpeed: 1
+    spellDamage: 0
+    armor: 32
+    magicResistance: 22
   isOnAttackRange: 0
   attackChannelingTime: 0.2
   basicAttackAnimationSpeed: 15
