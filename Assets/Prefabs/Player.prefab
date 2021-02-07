@@ -112,9 +112,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b22869c33c8bd7640a71f465aed237dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  team: 0
   maxHealth: 500
   currentHealth: 500
-  attackTarget: {fileID: 0}
   isOnAttackRange: 0
   attackChannelingTime: 0.2
   basicAttackAnimationSpeed: 15
@@ -133,9 +133,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa92a66ed0f3ac4ba372f3d8e715fb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  whatIsObstacle:
+  whatIsInteractable:
     serializedVersion: 2
-    m_Bits: 1024
+    m_Bits: 768
   champion: {fileID: 0}
 --- !u!114 &8169288003407480759
 MonoBehaviour:

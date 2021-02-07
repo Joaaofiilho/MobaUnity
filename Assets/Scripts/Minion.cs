@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.AI;
+﻿using System.Linq;
+using UnityEngine;
 using Utils;
 
 public class Minion : WalkableUnit
@@ -9,19 +9,33 @@ public class Minion : WalkableUnit
     private int _destinationIndex;
 
     private float _goldValue = 20f;
-    
-    public override void OnReceiveAction(GameObject actor)
+
+    private float searchEnemiesRange;
+
+    [SerializeField] private LayerMask whatIsEnemy;
+
+    //Unity methods
+    protected override void Start()
     {
-        base.OnReceiveAction(actor);
-        if (actor.CompareTag(Tags.Champion.Value))
-        {
-            var champion = actor.GetComponent<Champion>();
-            champion.SetAttackTarget(this);
-        }
+        base.Start();
+        searchEnemiesRange = statistics.AttackSpeed + 1f;
+        Move(destinations[_destinationIndex++]);
     }
 
-    //Base class methods
-    protected override void OnDie(Unit actor, Unit target)
+    protected override void Update()
+    {
+        base.Update();
+        if (_destinationIndex < destinations.Length && Vector3.Distance(PhysicsUtils.Vector3Y0(transform.position),
+            destinations[_destinationIndex - 1]) < 1f)
+        {
+            Move(destinations[_destinationIndex++]);
+        }
+
+        // SearchNearEnemies();
+    }
+
+    //Override methods
+    protected override void OnDie(Unit actor, Entity target)
     {
         if (actor.CompareTag(Tags.Champion.Value))
         {
@@ -32,18 +46,27 @@ public class Minion : WalkableUnit
         Destroy(gameObject);
     }
 
-    protected override void Start()
+    //Class methods
+    private void SearchNearEnemies()
     {
-        base.Start();
-        Move(destinations[_destinationIndex++]);
-    }
-
-    protected override void Update()
-    {
-        base.Update();
-        if (_destinationIndex < destinations.Length && Vector3.Distance(PhysicsUtils.Vector3Y0(transform.position), destinations[_destinationIndex-1]) < 1f)
+        if (!attackTarget)
         {
-            Move(destinations[_destinationIndex++]);
+            Collider[] colliders = Physics.OverlapSphere(transform.position, searchEnemiesRange, whatIsEnemy);
+
+            if (colliders != null)
+            {
+                //Finding all GameObjects nearby who are enemies
+                var nearEnemyGameObjects = colliders.ToList().ConvertAll(col => col.gameObject)
+                    .Where(go => LayerUtils.LayerIsOnLayerMask(go.layer, whatIsEnemy)).ToList();
+
+                var transforms = nearEnemyGameObjects.ConvertAll(go => go.transform).ToArray();
+
+                var nearestEnemy = transforms.Length > 1
+                    ? PhysicsUtils.FindNearestTransform(transform, transforms)
+                    : transforms[0];
+
+                SetAttackTarget(nearestEnemy.GetComponent<Unit>());
+            }
         }
     }
 }

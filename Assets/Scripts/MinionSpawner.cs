@@ -6,6 +6,7 @@ using Utils;
 public class MinionSpawner : MonoBehaviour
 {
     [SerializeField] private Lanes spawnLane;
+    [SerializeField] private Teams minionTeam;
     
     [SerializeField] private float waveCooldown = 20f;
 
@@ -41,7 +42,8 @@ public class MinionSpawner : MonoBehaviour
                 {
                     var minionPfb = Instantiate(minionPrefab, transform);
                     var minion = minionPfb.GetComponent<Minion>();
-                    minion.destinations = GameUtils.GetMinionCustomDestinationsByLane(spawnLane);
+                    minion.team = minionTeam;
+                    minion.destinations = GameUtils.GetMinionCustomDestinationsByLane(minionTeam, spawnLane);
                      
                     _minionSpawnIntervalCounter = 0;
                     _qttMinionPerWaveCounter++;

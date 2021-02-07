@@ -1,4 +1,7 @@
-﻿public class Statistics
+﻿using System;
+
+[Serializable]
+public class Statistics
 {
     public float AttackDamage { get; set; }
     public float BasicAttackRange = 6f;

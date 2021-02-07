@@ -9,7 +9,7 @@ public class Champion : WalkableUnit
     protected override void Start()
     {
         base.Start();
-        Statistics.AttackDamage = 62f;
+        statistics.AttackDamage = 62f;
     }
     
     /// <summary>
@@ -23,7 +23,18 @@ public class Champion : WalkableUnit
 
         if (target.CompareTag(Tags.Minion.Value))
         {
-            target.GetComponent<Minion>().OnReceiveAction(gameObject);
+            var minion = target.GetComponent<Minion>();
+
+            if (minion.team == team)
+            {
+                StopMoving();
+                Move(hitPoint);
+            }
+            else
+            {
+                minion.OnReceiveAction(gameObject);
+                SetAttackTarget(minion);
+            }
         }
         else if (target.CompareTag(Tags.Map.Value))
         {
@@ -37,9 +48,9 @@ public class Champion : WalkableUnit
     {
         return new[]
         {
-            new AttackInformation(Statistics.AttackDamage / 2f, DamageType.AttackDamage),
-            new AttackInformation(Statistics.AttackDamage, DamageType.SpellDamage),
-            new AttackInformation(Statistics.AttackDamage / 4f, DamageType.TrueDamage),
+            new AttackInformation(statistics.AttackDamage / 2f, DamageType.AttackDamage),
+            new AttackInformation(statistics.AttackDamage, DamageType.SpellDamage),
+            new AttackInformation(statistics.AttackDamage / 4f, DamageType.TrueDamage),
         };
     }
 

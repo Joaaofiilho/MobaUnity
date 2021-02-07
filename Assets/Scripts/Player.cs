@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using Utils;
 
 [RequireComponent(typeof(Champion))]
 public class Player : MonoBehaviour
 {
-    [SerializeField] private LayerMask whatIsObstacle;
+    [SerializeField] private LayerMask whatIsInteractable;
     
     [HideInInspector] public Champion champion;
 
@@ -21,16 +22,34 @@ public class Player : MonoBehaviour
         //Obtendo o raio apontando da posição da câmera até o ponto da posição do clique do mouse
         var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-        //Verificando se o raio acerta algum GameObject
-        //O "~" antes da LayerMask flipa todos os binários, então todas as camadas vão ser selecionadas, exceto a
-        //de obstáculos.
-        if (Physics.Raycast(ray, out var hit, 100f, ~whatIsObstacle))
-        {
-            var hitGameObject = hit.collider.gameObject;
+        var raycastHits = Physics.RaycastAll(ray, 100f, whatIsInteractable, QueryTriggerInteraction.Ignore);
 
-            if (!hitGameObject) return;
-            
-            champion.OnDoAction(hitGameObject, hit.point);
+        GameObject nearestGameObject = null;
+        Vector3 point = Vector3.zero;
+        var bestDistance = float.MaxValue;
+        
+        //This method only picks enemy entities or the map.
+        foreach (var raycastHit in raycastHits)
+        {
+            var entity = raycastHit.collider.gameObject.GetComponent<Entity>();
+            var isEnemyEntity = entity && entity.team != champion.team;
+            var isMap = raycastHit.collider.gameObject.CompareTag(Tags.Map.Value);
+
+            if (isEnemyEntity || isMap)
+            {
+                var newDistance = Vector3.Distance(raycastHit.point, transform.position);
+                if (newDistance < bestDistance)
+                {
+                    bestDistance = newDistance;
+                    nearestGameObject = raycastHit.collider.gameObject;
+                    point = raycastHit.point;
+                }
+            }
+        }
+
+        if (nearestGameObject)
+        {
+            champion.OnDoAction(nearestGameObject, point);
         }
     }
 

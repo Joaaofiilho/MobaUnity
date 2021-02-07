@@ -7,7 +7,7 @@ public abstract class WalkableUnit : Unit
 {
     protected NavMeshAgent Agent;
 
-    protected virtual void Start()
+    protected override void Start()
     {
         Agent = GetComponent<NavMeshAgent>();
         Agent.updateRotation = false;

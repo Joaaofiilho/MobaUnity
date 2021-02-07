@@ -58,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a9a1d395950237b4983d6b314c35e72f, type: 2}
+  - {fileID: 2100000, guid: 8296bfa56ef4ec44db5cb9961e3d58bc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -145,7 +145,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a9a1d395950237b4983d6b314c35e72f, type: 2}
+  - {fileID: 2100000, guid: 8296bfa56ef4ec44db5cb9961e3d58bc, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -192,9 +192,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14f590bef99afa94e882bc631d139eef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  team: 0
   maxHealth: 120
   currentHealth: 120
-  attackTarget: {fileID: 0}
   isOnAttackRange: 0
   attackChannelingTime: 0.2
   basicAttackAnimationSpeed: 0.5
@@ -202,6 +202,9 @@ MonoBehaviour:
     type: 3}
   showAttackRange: 0
   destinations: []
+  whatIsEnemy:
+    serializedVersion: 2
+    m_Bits: 512
 --- !u!195 &849783691891819980
 NavMeshAgent:
   m_ObjectHideFlags: 0

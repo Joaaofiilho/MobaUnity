@@ -18,9 +18,9 @@ TagManager:
   - 
   - 
   - Ground
-  - Unit
-  - Obstacle
-  - NoLight
+  - Entity
+  - 
+  - 
   - 
   - 
   - 

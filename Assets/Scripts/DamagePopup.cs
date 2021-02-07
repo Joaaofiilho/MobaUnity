@@ -14,7 +14,7 @@ public class DamagePopup : MonoBehaviour
         
         foreach (var attackInformation in attackInformations)
         {
-            var damagePopupPrefab = Instantiate(GlobalPrefabs.i.damagePopupPrefab);
+            var damagePopupPrefab = Instantiate(GameAssets.i.damagePopupPrefab);
 
             //Setting the position of the damage popup to be a little ahead from who is taking damage;
             var position = targetTransform.position;

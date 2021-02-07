@@ -6,7 +6,7 @@ public class BasicAttack : MonoBehaviour
 {
     private AttackInformation[] _attackInformations;
     private Unit _actor;
-    private Unit _attackTarget;
+    private Entity _attackTarget;
     private Vector3 _lastKnownPosition;
     private float _basicAttackAnimationSpeed;
 
@@ -50,7 +50,7 @@ public class BasicAttack : MonoBehaviour
         }
     }
 
-    public void Fire(Unit actor, Unit target, float basicAttackAnimationSpeed, AttackInformation[] attackInformations)
+    public void Fire(Unit actor, Entity target, float basicAttackAnimationSpeed, AttackInformation[] attackInformations)
     {
         _actor = actor;
         _attackTarget = target;

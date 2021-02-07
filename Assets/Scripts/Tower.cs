@@ -11,13 +11,13 @@ public class Tower : Unit
     private Unit _priorityAttackChampionTarget;
     private SphereCollider _sphereCollider;
 
-    private readonly List<Unit> _nearMinions = new List<Unit>();
-    private readonly List<Unit> _nearChampions = new List<Unit>();
+    private readonly List<Unit> _nearEnemyMinions = new List<Unit>();
+    private readonly List<Unit> _nearEnemyChampions = new List<Unit>();
 
-    [SerializeField] private float _increaseDamageCooldown = 1f;
+    [SerializeField] private float increaseDamageCooldown = 1f;
     private float _increaseDamageCooldownRemaining;
     private int _numOfSequentialBasicAttacks;
-    [SerializeField] private int _maxSequentialAttackDamageIncrease = 4;
+    [SerializeField] private int maxSequentialAttackDamageIncrease = 4;
     [SerializeField] [Range(0, 1)] private float increaseDamageRate = 0.2f;
 
     //Unity methods
@@ -25,14 +25,14 @@ public class Tower : Unit
     {
         base.Awake();
         ShouldLoseTargetWhenOutsideRange = true;
-        Statistics.AttackDamage = 32f;
-        Statistics.BasicAttackRange = 8f;
-        Statistics.AttackSpeed = 0.65f;
+        statistics.AttackDamage = 32f;
+        statistics.BasicAttackRange = 8f;
+        statistics.AttackSpeed = 0.65f;
         attackChannelingTime = 0.5f;
-        _increaseDamageCooldownRemaining = _increaseDamageCooldown;
+        _increaseDamageCooldownRemaining = increaseDamageCooldown;
 
         _sphereCollider = GetComponentInChildren<SphereCollider>();
-        _sphereCollider.radius = transform.localScale.y / (Statistics.BasicAttackRange / 2);
+        _sphereCollider.radius = transform.localScale.y / (statistics.BasicAttackRange / 2);
     }
 
     protected override void Update()
@@ -46,7 +46,7 @@ public class Tower : Unit
 
         _increaseDamageCooldownRemaining -= Time.deltaTime;
     }
-
+    
     private void FixedUpdate()
     {
         if (_priorityAttackChampionTarget)
@@ -55,17 +55,17 @@ public class Tower : Unit
         }
         else if (!attackTarget)
         {
-            Unit nearestMinion = null;
-            if (_nearMinions.Count > 0)
+            Unit nearestEnemyMinion = null;
+            if (_nearEnemyMinions.Count > 0)
             {
-                nearestMinion = FindNearestUnitByList(_nearMinions);
+                nearestEnemyMinion = FindNearestEnemyUnit(_nearEnemyMinions);
 
-                SetAttackTarget(nearestMinion);
+                SetAttackTarget(nearestEnemyMinion);
             }
             
-            if (!nearestMinion && _nearChampions.Count > 0)
+            if (!nearestEnemyMinion && _nearEnemyChampions.Count > 0)
             {
-                var nearestChampion = FindNearestUnitByList(_nearChampions);
+                var nearestChampion = FindNearestEnemyUnit(_nearEnemyChampions);
 
                 SetAttackTarget(nearestChampion);
             }
@@ -78,29 +78,37 @@ public class Tower : Unit
         if (other.gameObject.CompareTag(Tags.Minion.Value))
         {
             var unit = other.gameObject.GetComponent<Unit>();
+            var isEnemyUnit = unit && unit.team != team;
 
-            var hasUnit = _nearMinions.Count(minionUnit =>
-                minionUnit && minionUnit.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID()) > 0;
-
-            if (!hasUnit)
+            if (isEnemyUnit)
             {
-                _nearMinions.Add(unit);
-                unit.OnDieCallback += OnMinionDie;
+                var hasUnit = _nearEnemyMinions.Count(minionUnit =>
+                    minionUnit && minionUnit.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID()) > 0;
+
+                if (!hasUnit)
+                {
+                    _nearEnemyMinions.Add(unit);
+                    unit.OnDieCallback += OnMinionDie;
+                }
             }
         }
 
         if (other.gameObject.CompareTag(Tags.Champion.Value))
         {
             var unit = other.gameObject.GetComponent<Unit>();
+            var isEnemyUnit = unit && unit.team != team;
 
-            var hasUnit = _nearChampions.Count(championUnit =>
-                championUnit && championUnit.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID()) > 0;
-
-            if (!hasUnit)
+            if (isEnemyUnit)
             {
-                _nearChampions.Add(unit);
-                unit.OnHitCallback += OnChampionHitOther;
-                unit.OnDieCallback += OnChampionDie;
+                var hasUnit = _nearEnemyChampions.Count(championUnit =>
+                    championUnit && championUnit.gameObject.GetInstanceID() == unit.gameObject.GetInstanceID()) > 0;
+
+                if (!hasUnit)
+                {
+                    _nearEnemyChampions.Add(unit);
+                    unit.OnHitCallback += OnChampionHitOther;
+                    unit.OnDieCallback += OnChampionDie;
+                }
             }
         }
     }
@@ -111,7 +119,7 @@ public class Tower : Unit
         if (other.gameObject.CompareTag(Tags.Minion.Value))
         {
             var unit = other.gameObject.GetComponent<Unit>();
-            _nearMinions.Remove(unit);
+            _nearEnemyMinions.Remove(unit);
         }
 
         if (other.gameObject.CompareTag(Tags.Champion.Value))
@@ -124,7 +132,7 @@ public class Tower : Unit
                 _priorityAttackChampionTarget = null;
             }
             
-            _nearChampions.Remove(unit);
+            _nearEnemyChampions.Remove(unit);
         }
     }
 
@@ -134,7 +142,7 @@ public class Tower : Unit
         return new[]
         {
             new AttackInformation(
-                increaseDamageRate * Statistics.AttackDamage * _numOfSequentialBasicAttacks + Statistics.AttackDamage,
+                increaseDamageRate * statistics.AttackDamage * _numOfSequentialBasicAttacks + statistics.AttackDamage,
                 DamageType.AttackDamage)
         };
     }
@@ -142,16 +150,16 @@ public class Tower : Unit
     protected override void OnAttack()
     {
         base.OnAttack();
-        _increaseDamageCooldownRemaining = _increaseDamageCooldown;
+        _increaseDamageCooldownRemaining = increaseDamageCooldown;
 
-        if (_numOfSequentialBasicAttacks < _maxSequentialAttackDamageIncrease)
+        if (_numOfSequentialBasicAttacks < maxSequentialAttackDamageIncrease)
         {
             _numOfSequentialBasicAttacks++;
         }
     }
 
     //Class methods
-    private Unit FindNearestUnitByList(List<Unit> units)
+    private Unit FindNearestEnemyUnit(List<Unit> units)
     {
         var bestDistance = float.MaxValue;
         Unit nearestUnit = null;
@@ -160,7 +168,7 @@ public class Tower : Unit
 
         foreach (var unit in units)
         {
-            if (unit)
+            if (unit && unit.team != team)
             {
                 var newDistance = Vector3.Distance(position, PhysicsUtils.Vector3Y0(unit.transform.position));
                 if (newDistance < bestDistance)
@@ -185,9 +193,9 @@ public class Tower : Unit
         }
     }
 
-    private void OnChampionDie(Unit actor, Unit target)
+    private void OnChampionDie(Unit actor, Entity target)
     {
-        _nearChampions.Remove(target);
+        _nearEnemyChampions.Remove(target as Unit);
         if (_priorityAttackChampionTarget && _priorityAttackChampionTarget.gameObject.GetInstanceID() ==
             actor.gameObject.GetInstanceID())
         {
@@ -195,8 +203,8 @@ public class Tower : Unit
         }
     }
 
-    private void OnMinionDie(Unit actor, Unit target)
+    private void OnMinionDie(Unit actor, Entity target)
     {
-        _nearMinions.Remove(target);
+        _nearEnemyMinions.Remove(target as Unit);
     }
 }

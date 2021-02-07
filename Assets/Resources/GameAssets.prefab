@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8234792934679536929
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1098165204554911063}
+  - component: {fileID: 6125785934075247729}
+  m_Layer: 0
+  m_Name: GameAssets
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &1098165204554911063
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8234792934679536929}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -47.380043, y: -14.3161335, z: -32.48319}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6125785934075247729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8234792934679536929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faa5e6a9e56529546a8c612aba684afe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damagePopupPrefab: {fileID: 6866803524712507784, guid: 6d269d33da0532b409a26e4b0e75b7d7,
+    type: 3}
+  minionsTopPathPrefab: {fileID: 270583026535966394, guid: 2a497cbc82047c44587e0ec096ca4c30,
+    type: 3}
+  minionsMidPathPrefab: {fileID: 6437573013899129791, guid: efacbcbb13e6dd54a9f58337697f38a4,
+    type: 3}
+  minionsBottomPathPrefab: {fileID: 939885036267314210, guid: 2b3ad348ea8f6094393dc4493be35f8e,
+    type: 3}
+  blueTeamMaterial: {fileID: 2100000, guid: 8296bfa56ef4ec44db5cb9961e3d58bc, type: 2}
+  redTeamMaterial: {fileID: 2100000, guid: 51f36d7260077d847abb597a81429675, type: 2}
